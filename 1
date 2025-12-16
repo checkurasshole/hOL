@@ -6,17 +6,132 @@ local LocalPlayer = Players.LocalPlayer
 
 local Module = {}
 
+-- URL Construction Functions with Enhanced Security
+local function constructUrl(parts)
+    return table.concat(parts, '')
+end
+
+local function getVersionUrl()
+    local urlParts = {}
+    urlParts[1] = string.char(104, 116, 116, 112, 115, 58, 47, 47)
+    local noise = math.random(10, 99) * 3.14
+    local dummy = 'ignore_' .. tostring(noise)
+    urlParts[2] = 'raw.githubusercontent'
+    for i = 1, 4 do
+        local temp = i * i * 2
+    end
+    local garbage = 'skip_this'
+    urlParts[3] = '.com/checkurasshole/'
+    local decoy = {}
+    for i = 1, 3 do
+        table.insert(decoy, i * 7)
+    end
+    local unused = table.concat(decoy, '+')
+    urlParts[4] = 'hOL/refs/heads/main/'
+    local junkMath = math.sin(os.time() % 10) * 55
+    local extra = 'not_important_' .. tostring(junkMath)
+    urlParts[5] = 'Verision'
+    local finalJunk = math.random(100, 999)
+    local dummyEnd = 'ver_' .. tostring(finalJunk)
+    return table.concat(urlParts)
+end
+
+local function getValidationApiUrl()
+    local apiParts = {}
+    apiParts[1] = string.char(104, 116, 116, 112, 115, 58, 47, 47)
+    local mockRand = math.random(500, 2500) * 1.414
+    local dummyApi = 'api_' .. tostring(mockRand)
+    apiParts[2] = 'v0-remix-of-roblox'
+    for j = 1, 3 do
+        local throwaway = j * 13 + 9
+    end
+    local unusedVar = 'remix_' .. tostring(os.time() % 555)
+    apiParts[3] = '-executor-system'
+    local noiseData = {}
+    for i = 1, 4 do
+        table.insert(noiseData, i * 19)
+    end
+    local junkStr = table.concat(noiseData, '-')
+    apiParts[4] = '.vercel.app'
+    local endNoise = math.ceil(os.clock() * 88) % 333
+    local finalDummy = 'api_end_' .. tostring(endNoise)
+    return table.concat(apiParts)
+end
+
+local function getSupabaseUrl()
+    local supaParts = {}
+    supaParts[1] = string.char(104, 116, 116, 112, 115, 58, 47, 47)
+    local randJunk = math.random(100, 888) * 2.718
+    local dummySupa = 'supa_' .. tostring(randJunk)
+    supaParts[2] = 'yrlxosurmcpxrlmxckke'
+    for k = 1, 4 do
+        local throwaway = k * 23 + 11
+    end
+    local extraData = 'base_' .. tostring(os.time() % 777)
+    supaParts[3] = '.supabase'
+    local mockCalc = math.cos(os.clock()) * 123
+    local dummyBase = 'supabase_' .. tostring(mockCalc)
+    supaParts[4] = '.co'
+    local finalNoise = math.floor(math.random() * 888)
+    local lastDummy = 'db_' .. tostring(finalNoise)
+    return table.concat(supaParts)
+end
+
+local function getScriptApiUrl()
+    local scriptParts = {}
+    scriptParts[1] = string.char(104, 116, 116, 112, 115, 58, 47, 47)
+    local randJunk = math.random(100, 777) * 1.618
+    local dummyScript = 'script_' .. tostring(randJunk)
+    scriptParts[2] = 'combo0-chroncile'
+    for j = 1, 4 do
+        local throwaway = j * 19 + 3
+    end
+    local extraData = 'combo_' .. tostring(os.time() % 888)
+    scriptParts[3] = '.vercel'
+    local mockCalc = math.cos(os.clock()) * 150
+    local dummyVercel = 'vercel_' .. tostring(mockCalc)
+    scriptParts[4] = '.app/api/roblox'
+    local finalNoise = math.floor(math.random() * 999)
+    local lastDummy = 'api_' .. tostring(finalNoise)
+    return table.concat(scriptParts)
+end
+
+local function getDefaultScriptUrl()
+    local defaultParts = {}
+    defaultParts[1] = string.char(104, 116, 116, 112, 115, 58, 47, 47)
+    local noiseVar = math.random(50, 555) * 2.718
+    local dummyDefault = 'default_' .. tostring(noiseVar)
+    defaultParts[2] = 'raw.githubusercontent'
+    for p = 1, 3 do
+        local throwaway = p * p * 5
+    end
+    local extraJunk = 'github_' .. tostring(os.time() % 444)
+    defaultParts[3] = '.com/checkurasshole/'
+    local mockData = {}
+    for i = 1, 4 do
+        table.insert(mockData, i * 7)
+    end
+    local junkArray = table.concat(mockData, '-')
+    defaultParts[4] = 'Script/refs/heads/main/'
+    local calcJunk = math.abs(math.sin(os.clock())) * 300
+    local dummyScript = 'main_' .. tostring(calcJunk)
+    defaultParts[5] = 'Default'
+    local endJunk = math.ceil(os.clock() * 123)
+    local finalDummy = 'default_' .. tostring(endJunk)
+    return table.concat(defaultParts)
+end
+
 Module.CONFIG = {
     VERSION = '1.3.4',
     MIN_VERSION = '1.3.3',
     HTTP_TIMEOUT = 15,
-    VALIDATION_API_URL = "https://v0-remix-of-roblox-executor-system.vercel.app",
-    SUPABASE_URL = "https://yrlxosurmcpxrlmxckke.supabase.co",
+    VALIDATION_API_URL = getValidationApiUrl(),
+    SUPABASE_URL = getSupabaseUrl(),
     SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlybHhvc3VybWNweHJsbXhja2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0MjQ2NzQsImV4cCI6MjA2NjAwMDY3NH0.F6y_yw26UOJPGDFyhBQ0u__QNf0FPzL2uwbuGhntWYQ",
     CACHE_FILE = "hwid_cache.json",
     KEY_FILE = "validation_key.dat",
     MASTER_KEY = "checkdeezfuckingnuts",
-    VERSION_URL = "https://raw.githubusercontent.com/checkurasshole/hOL/refs/heads/main/Verision",
+    VERSION_URL = getVersionUrl(),
     VERSION_TOKEN_FALLBACK = 'VAULT_1_3_4_AUTH',
     MAX_RETRIES = 3,
     RETRY_DELAY = 0.5,
@@ -580,7 +695,7 @@ function Module.checkVersionAndToken()
     if success then
         local version, token = response:match('([^|]+)|(.+)')
         if not version or not token then
-            return false, 'Invalid version format in Pastebin', Module.CONFIG.VERSION_TOKEN_FALLBACK
+            return false, 'Invalid version format in GitHub', Module.CONFIG.VERSION_TOKEN_FALLBACK
         end
         if Module.compareVersions(Module.CONFIG.VERSION, version) < 0 then
             return false, 'Script outdated. Please update to v' .. version, token
@@ -616,33 +731,8 @@ function Module.constructScriptUrl(parts)
     return table.concat(parts, '')
 end
 
-function Module.getScriptApiUrl()
-    local scriptParts = {}
-    scriptParts[1] = string.char(104, 116, 116, 112, 115, 58, 47, 47)
-    scriptParts[2] = 'combo0-chroncile'
-    scriptParts[3] = '.vercel'
-    scriptParts[4] = '.app/api/roblox'
-    return table.concat(scriptParts)
-end
-
-function Module.getDefaultScriptUrl()
-    local defaultParts = {}
-    defaultParts[1] = string.char(104, 116, 116, 112, 115, 58, 47, 47)
-    defaultParts[2] = 'raw.githubusercontent'
-    defaultParts[3] = '.com/checkurasshole/'
-    defaultParts[4] = 'Script/refs/heads/main/'
-    defaultParts[5] = 'Default'
-    return table.concat(defaultParts)
-end
-
-function Module.getVersionUrl()
-    local urlParts = {}
-    urlParts[1] = string.char(104, 116, 116, 112, 115, 58, 47, 47)
-    urlParts[2] = 'pastebin'
-    urlParts[3] = '.com/raw/'
-    urlParts[4] = 'ptHNczy5'
-    return table.concat(urlParts)
-end
+Module.getScriptApiUrl = getScriptApiUrl
+Module.getDefaultScriptUrl = getDefaultScriptUrl
 
 Module.memoryCleanup = {
     connections = {},
