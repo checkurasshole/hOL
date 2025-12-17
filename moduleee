@@ -208,6 +208,21 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 PlayerModule.SelectedItems = {}
 
+-- FETCH ORES (AUTO)
+local Ores = {}
+local function fetchOres()
+	local OresFolder = ReplicatedStorage
+		:WaitForChild("Assets", 9e9)
+		:WaitForChild("Ores", 9e9)
+	
+	Ores = {}
+	for _, ore in ipairs(OresFolder:GetChildren()) do
+		table.insert(Ores, ore.Name)
+	end
+	table.sort(Ores)
+	return Ores
+end
+
 local Essences = {
 	"Tiny Essence",
 	"Small Essence",
@@ -222,6 +237,13 @@ local Materials = {
 	"Boneite",
 	"Dark Boneite"
 }
+
+function PlayerModule.getOres()
+	if #Ores == 0 then
+		fetchOres()
+	end
+	return Ores
+end
 
 function PlayerModule.getEssences()
 	return Essences
