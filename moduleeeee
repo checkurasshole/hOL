@@ -205,6 +205,9 @@ end
 
 -- SELL SYSTEM
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+PlayerModule.AutoSellConnections = {}
 
 -- FETCH ORES (AUTO)
 local Ores = {}
@@ -252,7 +255,7 @@ function PlayerModule.getMaterials()
 end
 
 function PlayerModule.sellItem(itemName)
-	local success, err = pcall(function()
+	pcall(function()
 		local RunCommandRF = ReplicatedStorage
 			:WaitForChild("Shared", 9e9)
 			:WaitForChild("Packages", 9e9)
@@ -267,17 +270,33 @@ function PlayerModule.sellItem(itemName)
 			{ Basket = {[itemName] = 1} }
 		)
 	end)
+end
 
-	if success then
-		return true, "Sold " .. itemName
-	else
-		return false, "Failed to sell " .. itemName
+function PlayerModule.startAutoSell(itemName)
+	if PlayerModule.AutoSellConnections[itemName] then
+		return
+	end
+	
+	PlayerModule.AutoSellConnections[itemName] = RunService.Heartbeat:Connect(function()
+		PlayerModule.sellItem(itemName)
+	end)
+end
+
+function PlayerModule.stopAutoSell(itemName)
+	if PlayerModule.AutoSellConnections[itemName] then
+		PlayerModule.AutoSellConnections[itemName]:Disconnect()
+		PlayerModule.AutoSellConnections[itemName] = nil
 	end
 end
 
 function PlayerModule.cleanup()
 	PlayerModule.FlyEnabled = false
 	PlayerModule.stopFly()
+	
+	for itemName, connection in pairs(PlayerModule.AutoSellConnections) do
+		connection:Disconnect()
+	end
+	PlayerModule.AutoSellConnections = {}
 end
 
 return PlayerModule
