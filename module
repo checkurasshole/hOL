@@ -1,0 +1,211 @@
+local PlayerModule = {}
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+PlayerModule.FlyEnabled = false
+PlayerModule.FlySpeed = 50
+PlayerModule.InfiniteJumpEnabled = false
+PlayerModule.WalkSpeedMultiplier = 1
+PlayerModule.FlyConnection = nil
+
+function PlayerModule.startFly()
+	if PlayerModule.FlyConnection then
+		PlayerModule.FlyConnection:Disconnect()
+	end
+	
+	PlayerModule.FlyConnection = RunService.Heartbeat:Connect(function()
+		if not PlayerModule.FlyEnabled then return end
+		
+		local char = player.Character
+		if not char then return end
+		
+		local hrp = char:FindFirstChild("HumanoidRootPart")
+		if not hrp then return end
+		
+		local cam = workspace.CurrentCamera
+		local moveDirection = Vector3.new()
+		
+		if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+			moveDirection = moveDirection + cam.CFrame.LookVector
+		end
+		if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+			moveDirection = moveDirection - cam.CFrame.LookVector
+		end
+		if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+			moveDirection = moveDirection - cam.CFrame.RightVector
+		end
+		if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+			moveDirection = moveDirection + cam.CFrame.RightVector
+		end
+		if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+			moveDirection = moveDirection + Vector3.new(0, 1, 0)
+		end
+		if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+			moveDirection = moveDirection - Vector3.new(0, 1, 0)
+		end
+		
+		if moveDirection.Magnitude > 0 then
+			hrp.AssemblyLinearVelocity = moveDirection.Unit * PlayerModule.FlySpeed
+		else
+			hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+		end
+	end)
+end
+
+function PlayerModule.stopFly()
+	if PlayerModule.FlyConnection then
+		PlayerModule.FlyConnection:Disconnect()
+		PlayerModule.FlyConnection = nil
+	end
+	
+	local char = player.Character
+	if char then
+		local hrp = char:FindFirstChild("HumanoidRootPart")
+		if hrp then
+			hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+		end
+	end
+end
+
+function PlayerModule.setupInfiniteJump()
+	UserInputService.JumpRequest:Connect(function()
+		if PlayerModule.InfiniteJumpEnabled then
+			local char = player.Character
+			if char then
+				local humanoid = char:FindFirstChildOfClass("Humanoid")
+				if humanoid then
+					humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+				end
+			end
+		end
+	end)
+end
+
+function PlayerModule.setupWalkSpeed()
+	RunService.RenderStepped:Connect(function()
+		local char = player.Character
+		if char then
+			local humanoid = char:FindFirstChildOfClass("Humanoid")
+			local hrp = char:FindFirstChild("HumanoidRootPart")
+			
+			if humanoid and hrp and humanoid.MoveDirection.Magnitude > 0 then
+				local moveDirection = humanoid.MoveDirection
+				hrp.CFrame = hrp.CFrame + (moveDirection * PlayerModule.WalkSpeedMultiplier * 0.1)
+			end
+		end
+	end)
+end
+
+local proximityLocations = {
+	{name = "Arcane Pickaxe", path = {"Proximity", "Arcane Pickaxe"}},
+	{name = "Bard", path = {"Proximity", "Bard"}},
+	{name = "Bard Guitar", path = {"Proximity", "BardGuitar"}},
+	{name = "Bronze Pickaxe", path = {"Proximity", "Bronze Pickaxe"}},
+	{name = "Cat", path = {"Proximity", "Cat"}},
+	{name = "Enhancer", path = {"Proximity", "Enhancer"}},
+	{name = "Fallen Angel Cave Door", path = {"Proximity", "FallenAngelCaveDoor"}},
+	{name = "Gold Pickaxe", path = {"Proximity", "Gold Pickaxe"}},
+	{name = "Greedy Cey", path = {"Proximity", "Greedy Cey"}},
+	{name = "Injured Miner", path = {"Proximity", "Injured Miner"}},
+	{name = "Iron Pickaxe", path = {"Proximity", "Iron Pickaxe"}},
+	{name = "Marbles", path = {"Proximity", "Marbles"}},
+	{name = "Maria", path = {"Proximity", "Maria"}},
+	{name = "Miner Fred", path = {"Proximity", "Miner Fred"}},
+	{name = "Movement Speed Potion", path = {"Proximity", "MovementSpeedPotion1"}},
+	{name = "Nord", path = {"Proximity", "Nord"}},
+	{name = "Platinum Pickaxe", path = {"Proximity", "Platinum Pickaxe"}},
+	{name = "Runemaker", path = {"Proximity", "Runemaker"}},
+	{name = "Sensei Moro", path = {"Proximity", "Sensei Moro"}},
+	{name = "Simple Lantern", path = {"Proximity", "SimpleLantern"}},
+	{name = "Stonewake's Pickaxe", path = {"Proximity", "Stonewake's Pickaxe"}},
+	{name = "Suspicious Fisher", path = {"Proximity", "Suspicous Fisher"}},
+	{name = "Tomo", path = {"Proximity", "Tomo"}},
+	{name = "Umut The Brave", path = {"Proximity", "UmutTheBrave"}},
+	{name = "Undead", path = {"Proximity", "Undead"}},
+	{name = "Wizard", path = {"Proximity", "Wizard"}},
+	{name = "Forge", path = {"Proximity", "Forge"}},
+}
+
+function PlayerModule.getProximityPosition(pathTable)
+	local current = workspace
+	for _, pathPart in ipairs(pathTable) do
+		current = current:FindFirstChild(pathPart)
+		if not current then
+			return nil
+		end
+	end
+	
+	local proximityPrompt = current:FindFirstChildOfClass("ProximityPrompt")
+	if proximityPrompt and proximityPrompt.Parent then
+		local part = proximityPrompt.Parent
+		if part:IsA("BasePart") then
+			return part.Position
+		elseif part:IsA("Model") then
+			local primary = part.PrimaryPart or part:FindFirstChild("HumanoidRootPart") or part:FindFirstChildWhichIsA("BasePart")
+			if primary then
+				return primary.Position
+			end
+		end
+	end
+	
+	if current:IsA("BasePart") then
+		return current.Position
+	elseif current:IsA("Model") then
+		local primary = current.PrimaryPart or current:FindFirstChild("HumanoidRootPart") or current:FindFirstChildWhichIsA("BasePart")
+		if primary then
+			return primary.Position
+		end
+	end
+	
+	return nil
+end
+
+function PlayerModule.teleportToLocation(target)
+	local char = player.Character
+	if not char then return end
+	
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+	
+	local distance = (hrp.Position - target).Magnitude
+	local duration = distance / 50
+	
+	local targetCFrame = CFrame.lookAt(target, target + Vector3.new(0, 0, 1))
+	
+	local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Linear), {CFrame = targetCFrame})
+	tween:Play()
+end
+
+function PlayerModule.getProximityLocations()
+	return proximityLocations
+end
+
+function PlayerModule.serverHop()
+	local TeleportService = game:GetService("TeleportService")
+	local PlaceId = game.PlaceId
+	local servers = game:GetService("HttpService"):JSONDecode(game:HttpGetAsync("https://games.roblox.com/v1/games/" .. PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+	
+	for _, server in pairs(servers.data) do
+		if server.id ~= game.JobId and server.playing < server.maxPlayers then
+			TeleportService:TeleportToPlaceInstance(PlaceId, server.id, player)
+			break
+		end
+	end
+end
+
+function PlayerModule.rejoinServer()
+	local TeleportService = game:GetService("TeleportService")
+	TeleportService:Teleport(game.PlaceId, player)
+end
+
+function PlayerModule.cleanup()
+	PlayerModule.FlyEnabled = false
+	PlayerModule.stopFly()
+end
+
+return PlayerModule
