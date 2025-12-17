@@ -203,9 +203,80 @@ function PlayerModule.rejoinServer()
 	TeleportService:Teleport(game.PlaceId, player)
 end
 
+-- SELL SYSTEM
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+PlayerModule.SelectedItems = {}
+
+local Essences = {
+	"Tiny Essence",
+	"Small Essence",
+	"Medium Essence",
+	"Large Essence",
+	"Great Essence",
+	"Superior Essence",
+	"Epic Essence"
+}
+
+local Materials = {
+	"Boneite",
+	"Dark Boneite"
+}
+
+function PlayerModule.getEssences()
+	return Essences
+end
+
+function PlayerModule.getMaterials()
+	return Materials
+end
+
+function PlayerModule.toggleItem(itemName)
+	if PlayerModule.SelectedItems[itemName] then
+		PlayerModule.SelectedItems[itemName] = nil
+		return false
+	else
+		PlayerModule.SelectedItems[itemName] = 1
+		return true
+	end
+end
+
+function PlayerModule.clearSelectedItems()
+	PlayerModule.SelectedItems = {}
+end
+
+function PlayerModule.sellSelectedItems()
+	if next(PlayerModule.SelectedItems) == nil then 
+		return false, "No items selected"
+	end
+
+	local success, err = pcall(function()
+		local RunCommandRF = ReplicatedStorage
+			:WaitForChild("Shared", 9e9)
+			:WaitForChild("Packages", 9e9)
+			:WaitForChild("Knit", 9e9)
+			:WaitForChild("Services", 9e9)
+			:WaitForChild("DialogueService", 9e9)
+			:WaitForChild("RF", 9e9)
+			:WaitForChild("RunCommand", 9e9)
+
+		RunCommandRF:InvokeServer(
+			"SellConfirm",
+			{ Basket = PlayerModule.SelectedItems }
+		)
+	end)
+
+	if success then
+		return true, "Items sold successfully"
+	else
+		return false, "Failed to sell items"
+	end
+end
+
 function PlayerModule.cleanup()
 	PlayerModule.FlyEnabled = false
 	PlayerModule.stopFly()
+	PlayerModule.clearSelectedItems()
 end
 
 return PlayerModule
