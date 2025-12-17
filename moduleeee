@@ -206,8 +206,6 @@ end
 -- SELL SYSTEM
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-PlayerModule.SelectedItems = {}
-
 -- FETCH ORES (AUTO)
 local Ores = {}
 local function fetchOres()
@@ -253,25 +251,7 @@ function PlayerModule.getMaterials()
 	return Materials
 end
 
-function PlayerModule.toggleItem(itemName)
-	if PlayerModule.SelectedItems[itemName] then
-		PlayerModule.SelectedItems[itemName] = nil
-		return false
-	else
-		PlayerModule.SelectedItems[itemName] = 1
-		return true
-	end
-end
-
-function PlayerModule.clearSelectedItems()
-	PlayerModule.SelectedItems = {}
-end
-
-function PlayerModule.sellSelectedItems()
-	if next(PlayerModule.SelectedItems) == nil then 
-		return false, "No items selected"
-	end
-
+function PlayerModule.sellItem(itemName)
 	local success, err = pcall(function()
 		local RunCommandRF = ReplicatedStorage
 			:WaitForChild("Shared", 9e9)
@@ -284,21 +264,20 @@ function PlayerModule.sellSelectedItems()
 
 		RunCommandRF:InvokeServer(
 			"SellConfirm",
-			{ Basket = PlayerModule.SelectedItems }
+			{ Basket = {[itemName] = 1} }
 		)
 	end)
 
 	if success then
-		return true, "Items sold successfully"
+		return true, "Sold " .. itemName
 	else
-		return false, "Failed to sell items"
+		return false, "Failed to sell " .. itemName
 	end
 end
 
 function PlayerModule.cleanup()
 	PlayerModule.FlyEnabled = false
 	PlayerModule.stopFly()
-	PlayerModule.clearSelectedItems()
 end
 
 return PlayerModule
