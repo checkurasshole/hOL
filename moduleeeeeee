@@ -328,6 +328,43 @@ function PlayerModule.stopAutoSell()
 	end
 end
 
+function PlayerModule.fixAutoSell()
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hrp = char:WaitForChild("HumanoidRootPart")
+
+	-- FIND GREEDY CEY
+	local proximityFolder = workspace:WaitForChild("Proximity")
+	local GreedyCey = proximityFolder:FindFirstChild("Greedy Cey")
+
+	if not GreedyCey then
+		return false, "Greedy Cey not found"
+	end
+
+	-- FIND PROXIMITY PROMPT
+	local prompt = GreedyCey:FindFirstChildOfClass("ProximityPrompt")
+	if not prompt then
+		return false, "ProximityPrompt not found on Greedy Cey"
+	end
+
+	-- TELEPORT NEAR GREEDY CEY
+	local targetPart = GreedyCey.PrimaryPart or GreedyCey:FindFirstChildWhichIsA("BasePart", true)
+
+	if not targetPart then
+		return false, "No valid part found to teleport to"
+	end
+
+	-- OFFSET SO YOU DON'T CLIP INSIDE HIM
+	hrp.CFrame = targetPart.CFrame * CFrame.new(0, 0, -3)
+
+	-- SMALL WAIT SO RANGE CHECK PASSES
+	task.wait(0.2)
+
+	-- FIRE PROMPT
+	fireproximityprompt(prompt)
+	
+	return true, "Auto Sell Fixed"
+end
+
 function PlayerModule.cleanup()
 	PlayerModule.FlyEnabled = false
 	PlayerModule.stopFly()
