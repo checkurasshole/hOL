@@ -207,7 +207,9 @@ end
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-PlayerModule.AutoSellConnections = {}
+PlayerModule.AutoSellEnabled = false
+PlayerModule.SelectedSellItems = {}
+PlayerModule.AutoSellConnection = nil
 
 -- FETCH ORES (AUTO)
 local Ores = {}
@@ -254,7 +256,37 @@ function PlayerModule.getMaterials()
 	return Materials
 end
 
-function PlayerModule.sellItem(itemName)
+function PlayerModule.getAllSellableItems()
+	local allItems = {}
+	for _, ore in ipairs(PlayerModule.getOres()) do
+		table.insert(allItems, ore)
+	end
+	for _, essence in ipairs(Essences) do
+		table.insert(allItems, essence)
+	end
+	for _, material in ipairs(Materials) do
+		table.insert(allItems, material)
+	end
+	return allItems
+end
+
+function PlayerModule.addSellItem(itemName)
+	PlayerModule.SelectedSellItems[itemName] = true
+end
+
+function PlayerModule.removeSellItem(itemName)
+	PlayerModule.SelectedSellItems[itemName] = nil
+end
+
+function PlayerModule.clearSellItems()
+	PlayerModule.SelectedSellItems = {}
+end
+
+function PlayerModule.sellItems()
+	if next(PlayerModule.SelectedSellItems) == nil then
+		return
+	end
+	
 	pcall(function()
 		local RunCommandRF = ReplicatedStorage
 			:WaitForChild("Shared", 9e9)
@@ -265,38 +297,42 @@ function PlayerModule.sellItem(itemName)
 			:WaitForChild("RF", 9e9)
 			:WaitForChild("RunCommand", 9e9)
 
+		local basket = {}
+		for itemName, _ in pairs(PlayerModule.SelectedSellItems) do
+			basket[itemName] = 1
+		end
+
 		RunCommandRF:InvokeServer(
 			"SellConfirm",
-			{ Basket = {[itemName] = 1} }
+			{ Basket = basket }
 		)
 	end)
 end
 
-function PlayerModule.startAutoSell(itemName)
-	if PlayerModule.AutoSellConnections[itemName] then
+function PlayerModule.startAutoSell()
+	if PlayerModule.AutoSellConnection then
 		return
 	end
 	
-	PlayerModule.AutoSellConnections[itemName] = RunService.Heartbeat:Connect(function()
-		PlayerModule.sellItem(itemName)
+	PlayerModule.AutoSellConnection = RunService.Heartbeat:Connect(function()
+		if PlayerModule.AutoSellEnabled then
+			PlayerModule.sellItems()
+		end
 	end)
 end
 
-function PlayerModule.stopAutoSell(itemName)
-	if PlayerModule.AutoSellConnections[itemName] then
-		PlayerModule.AutoSellConnections[itemName]:Disconnect()
-		PlayerModule.AutoSellConnections[itemName] = nil
+function PlayerModule.stopAutoSell()
+	if PlayerModule.AutoSellConnection then
+		PlayerModule.AutoSellConnection:Disconnect()
+		PlayerModule.AutoSellConnection = nil
 	end
 end
 
 function PlayerModule.cleanup()
 	PlayerModule.FlyEnabled = false
 	PlayerModule.stopFly()
-	
-	for itemName, connection in pairs(PlayerModule.AutoSellConnections) do
-		connection:Disconnect()
-	end
-	PlayerModule.AutoSellConnections = {}
+	PlayerModule.stopAutoSell()
+	PlayerModule.clearSellItems()
 end
 
 return PlayerModule
